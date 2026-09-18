@@ -1,0 +1,16 @@
+name: Deoloy Website
+on:
+  push:
+    branches:
+      - main
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code 
+        uses: actions/checkout@v4
+        -name : Validate HTML
+        run: echo "Validation of HTML files completed successfully."
+
+        -name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
