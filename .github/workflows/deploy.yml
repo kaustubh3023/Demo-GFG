@@ -1,4 +1,4 @@
-name: Deploy with Helm
+name: Build and Deploy with Helm
 
 on:
   push:
@@ -6,24 +6,40 @@ on:
       - main
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: self-hosted
 
     steps:
-      - name: Checkout Repository
+      # 1. Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Install Helm
-        uses: azure/setup-helm@v4
-
-      - name: Configure Kubernetes
+      # 2. Build Docker image
+      - name: Build Docker Image
         run: |
-          mkdir -p ~/.kube
-          echo "${{ secrets.KUBE_CONFIG }}" > ~/.kube/config
+          docker build -t myapp:${{ github.sha }} .
 
+      # 3. Tag image
+      - name: Tag Docker Image
+        run: |
+          docker tag myapp:${{ github.sha }} myapp:latest
+
+      # 4. Deploy using Helm
       - name: Deploy with Helm
         run: |
-          helm upgrade --install myapp ./mychart \
-            --namespace production \
-            --create-namespace \
-            -f ./mychart/values-prod.yaml
+          helm upgrade --install update ./mychart \
+            --namespace default
+
+      # 5. Check Helm deployment
+      - name: Check Helm Release
+        run: |
+          helm status update
+
+      # 6. Check Kubernetes resources
+      - name: Check Kubernetes Pods
+        run: |
+          kubectl get pods
+
+      - name: Check Kubernetes Service
+        run: |
+          kubectl get svc
