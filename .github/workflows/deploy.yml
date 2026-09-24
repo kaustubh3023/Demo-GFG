@@ -1,45 +1,33 @@
 name: Build and Deploy with Helm
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:
     runs-on: self-hosted
 
     steps:
-      # 1. Checkout code
-      - name: Checkout Code
-        uses: actions/checkout@v4
+      - name: Clone Application Repository
+        run: |
+          rm -rf demo-app
+          git clone https://github.com/USERNAME/REPOSITORY.git demo-app
 
-      # 2. Build Docker image
       - name: Build Docker Image
         run: |
-          docker build -t myapp:${{ github.sha }} .
+          cd demo-app
+          docker build -t demo-app:latest .
 
-      # 3. Tag image
-      - name: Tag Docker Image
+      - name: Import Image into K3s
         run: |
-          docker tag myapp:${{ github.sha }} myapp:latest
+          docker save demo-app:latest | sudo k3s ctr images import -
 
-      # 4. Deploy using Helm
       - name: Deploy with Helm
         run: |
-          helm upgrade --install update ./mychart \
-            --namespace default
+          helm upgrade --install demo-app ./mychart
 
-      # 5. Check Helm deployment
-      - name: Check Helm Release
+      - name: Verify Deployment
         run: |
-          helm status update
-
-      # 6. Check Kubernetes resources
-      - name: Check Kubernetes Pods
-        run: |
+          helm status demo-app
           kubectl get pods
-
-      - name: Check Kubernetes Service
-        run: |
           kubectl get svc
