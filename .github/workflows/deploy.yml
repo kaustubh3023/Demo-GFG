@@ -1,6 +1,9 @@
 name: Deploy Nginx with Helm
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
@@ -8,6 +11,9 @@ jobs:
     runs-on: self-hosted
 
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
       - name: Pull Nginx Image
         run: |
           docker pull nginx:latest
