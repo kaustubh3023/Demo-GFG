@@ -1,33 +1,27 @@
-name: Build and Deploy with Helm
+name: Deploy Nginx with Helm
 
 on:
   workflow_dispatch:
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: self-hosted
 
     steps:
-      - name: Clone Application Repository
+      - name: Pull Nginx Image
         run: |
-          rm -rf demo-app
-          git clone https://github.com/USERNAME/REPOSITORY.git demo-app
+          docker pull nginx:latest
 
-      - name: Build Docker Image
+      - name: Import Nginx Image into K3s
         run: |
-          cd demo-app
-          docker build -t demo-app:latest .
-
-      - name: Import Image into K3s
-        run: |
-          docker save demo-app:latest | sudo k3s ctr images import -
+          docker save nginx:latest | sudo k3s ctr images import -
 
       - name: Deploy with Helm
         run: |
-          helm upgrade --install demo-app ./mychart
+          helm upgrade --install nginx-app ./mychart
 
       - name: Verify Deployment
         run: |
-          helm status demo-app
+          helm status nginx-app
           kubectl get pods
           kubectl get svc
