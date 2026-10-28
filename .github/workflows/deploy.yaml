@@ -1,0 +1,14 @@
+name: Build Number Example
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Display Build Number
+        run: echo "Build Number: $GITHUB_RUN_NUMBER"
